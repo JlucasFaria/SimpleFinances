@@ -21,4 +21,11 @@ public class TransactionController : ControllerBase
         var result = _transactionService.Create(request);
         return CreatedAtAction(nameof(Create), new { id = result.Id }, result);
     }
+
+    [HttpGet]
+    public IActionResult GetAll()
+    {
+        var result = _transactionService.GetAll();
+        return Ok(result);
+    }
 }
