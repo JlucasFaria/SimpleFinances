@@ -42,4 +42,19 @@ public class TransactionController : ControllerBase
             return NotFound(new { message = ex.Message });
         }
     }
+
+    [HttpPut("{id}")]
+    public IActionResult Update(Guid id, [FromBody] CreateTransactionRequest request)
+    {
+        try
+        {
+            _transactionService.Update(id, request);
+            return NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        
+    }
 }

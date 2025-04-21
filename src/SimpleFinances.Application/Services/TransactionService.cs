@@ -66,4 +66,18 @@ public class TransactionService : ITransactionService
 
         _transactions.Remove(transaction);
     }
+    public void Update(Guid id, CreateTransactionRequest request)
+    {
+        var transaction = _transactions.FirstOrDefault(t => t.Id == id);
+
+        if (transaction is null)
+        {
+            throw new InvalidOperationException("Transaction not found.");
+        }
+
+        transaction.Title = request.Title;
+        transaction.Amount = request.Amount;
+        transaction.Date = request.Date;
+        transaction.Type = (TransactionType)request.Type;
+    }
 }
