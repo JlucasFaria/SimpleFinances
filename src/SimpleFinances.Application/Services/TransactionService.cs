@@ -30,7 +30,6 @@ public class TransactionService : ITransactionService
             Type = transaction.Type.ToString(),
         };
     }
-
     public TransactionSummaryResponse GetAll()
     {
         var transactionResponse = _transactions.Select(t => new TransactionResponse
@@ -55,5 +54,16 @@ public class TransactionService : ITransactionService
             Transactions = transactionResponse,
             TotalBalance = income - expense
         };
+    }
+    public void Delete(Guid id)
+    {
+        var transaction = _transactions.FirstOrDefault(t => t.Id == id);
+
+        if (transaction is null)
+        {
+            throw new InvalidOperationException("Transaction not found.");
+        }
+
+        _transactions.Remove(transaction);
     }
 }

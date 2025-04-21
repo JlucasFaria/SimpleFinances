@@ -28,4 +28,18 @@ public class TransactionController : ControllerBase
         var result = _transactionService.GetAll();
         return Ok(result);
     }
+
+    [HttpDelete("{id}")]
+    public IActionResult Delete(Guid id)
+    {
+        try
+        {
+            _transactionService.Delete(id);
+            return NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+    }
 }
