@@ -1,4 +1,7 @@
+using FluentValidation.AspNetCore;
+using FluentValidation;
 using SimpleFinances.Application.Services;
+using SimpleFinances.Application.Validators;
 
 namespace SimpleFinances;
 
@@ -10,6 +13,9 @@ public class Program
 
         // Add services to the container.
         builder.Services.AddControllers();
+
+        builder.Services.AddValidatorsFromAssemblyContaining<CreateTransactionRequestValidator>();
+        builder.Services.AddFluentValidationAutoValidation();
 
         // Swagger (documentação e testes da API)
         builder.Services.AddEndpointsApiExplorer();
