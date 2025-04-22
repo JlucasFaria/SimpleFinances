@@ -30,31 +30,67 @@ public class TransactionService : ITransactionService
             Type = transaction.Type.ToString(),
         };
     }
-    public TransactionSummaryResponse GetAll()
+
+    public TransactionSummaryResponse GetAll(
+    string? type,
+    DateTime? startDate,
+    DateTime? endDate,
+    decimal? min,
+    decimal? max)
     {
-        var transactionResponse = _transactions.Select(t => new TransactionResponse
+        var query = _transactions.AsQueryable();
+
+        // Filtro por tipo
+        if (!string.IsNullOrWhiteSpace(type))
         {
-            Id = t.Id,
-            Title = t.Title,
-            Amount = t.Amount,
-            Date = t.Date,
-            Type = t.Type.ToString(),
-        }).ToList();
+            var typeNormalized = type.Trim().ToLower();
+            query = typeNormalized switch
+            {
+                "income" => query.Where(t => t.Type == TransactionType.Income),
+                "expense" => query.Where(t => t.Type == TransactionType.Expense),
+                _ => Enumerable.Empty<Transaction>().AsQueryable()
+            };
+        }
 
-        var income = _transactions
-            .Where(t => t.Type == TransactionType.Income)
-            .Sum(t => t.Amount);
+        // Filtros adicionais
+        if (startDate.HasValue)
+            query = query.Where(t => t.Date >= startDate.Value);
 
-        var expense = _transactions
-            .Where(t => t.Type == TransactionType.Expense)
-            .Sum(t => t.Amount);
+        if (endDate.HasValue)
+            query = query.Where(t => t.Date <= endDate.Value);
 
-        return new TransactionSummaryResponse
+        if (min.HasValue)
+            query = query.Where(t => t.Amount >= min.Value);
+
+        if (max.HasValue)
+            query = query.Where(t => t.Amount <= max.Value);
+
+        // Lista final após filtros
+        var filteredList = query.ToList();
+
+        var response = new TransactionSummaryResponse
         {
-            Transactions = transactionResponse,
-            TotalBalance = income - expense
+            Transactions = filteredList.Select(t => new TransactionResponse
+            {
+                Id = t.Id,
+                Title = t.Title,
+                Amount = t.Amount,
+                Date = t.Date,
+                Type = t.Type.ToString()
+            }).ToList(),
+
+            TotalBalance = filteredList
+                .Where(t => t.Type == TransactionType.Income)
+                .Sum(t => t.Amount)
+                -
+                filteredList
+                .Where(t => t.Type == TransactionType.Expense)
+                .Sum(t => t.Amount)
         };
+
+        return response;
     }
+
     public void Delete(Guid id)
     {
         var transaction = _transactions.FirstOrDefault(t => t.Id == id);

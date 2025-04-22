@@ -23,9 +23,14 @@ public class TransactionController : ControllerBase
     }
 
     [HttpGet]
-    public IActionResult GetAll()
+    public IActionResult GetAll(
+        [FromQuery] string? type,
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate,
+        [FromQuery] decimal? min,
+        [FromQuery] decimal? max)
     {
-        var result = _transactionService.GetAll();
+        var result = _transactionService.GetAll(type, startDate, endDate, min, max);
         return Ok(result);
     }
 
