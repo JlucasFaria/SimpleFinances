@@ -1,7 +1,8 @@
-using FluentValidation.AspNetCore;
 using FluentValidation;
-using SimpleFinances.Application.Services;
+using FluentValidation.AspNetCore;
+using Microsoft.EntityFrameworkCore;
 using SimpleFinances.Application.Validators;
+using SimpleFinances.Infrastructure.Data;
 
 namespace SimpleFinances;
 
@@ -21,8 +22,9 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
-        // Serviço de transações (em memória por enquanto)
-        builder.Services.AddSingleton<ITransactionService, TransactionService>();
+        // Banco de dados SQLite (usando EF Core)
+        builder.Services.AddDbContext<FinanceDbContext>(options =>
+            options.UseSqlite("Data Source=finances.db"));
 
         var app = builder.Build();
 
