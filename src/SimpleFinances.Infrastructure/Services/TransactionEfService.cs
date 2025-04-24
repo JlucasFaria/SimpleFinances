@@ -41,17 +41,62 @@ public class TransactionEfService : ITransactionService
 
     public TransactionSummaryResponse GetAll(string? type, DateTime? startDate, DateTime? endDate, decimal? min, decimal? max)
     {
-        throw new NotImplementedException(); // você pode implementar depois
+        var query = _context.Transactions.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(type) && Enum.TryParse<TransactionType>(type, true, out var parsedType))
+            query = query.Where(t => t.Type == parsedType);
+
+        if (startDate.HasValue)
+            query = query.Where(t => t.Date >= startDate.Value);
+
+        if (endDate.HasValue)
+            query = query.Where(t => t.Date <= endDate.Value);
+
+        if (min.HasValue)
+            query = query.Where(t => t.Amount >= min.Value);
+
+        if (max.HasValue)
+            query = query.Where(t => t.Amount <= max.Value);
+
+        var list = query.ToList();
+
+        var income = list.Where(t => t.Type == TransactionType.Income).Sum(t => t.Amount);
+        var expense = list.Where(t => t.Type == TransactionType.Expense).Sum(t => t.Amount);
+
+        return new TransactionSummaryResponse
+        {
+            Transactions = list.Select(t => new TransactionResponse
+            {
+                Id = t.Id,
+                Title = t.Title,
+                Amount = t.Amount,
+                Date = t.Date,
+                Type = t.Type.ToString()
+            }).ToList(),
+            TotalBalance = income - expense
+        };
     }
 
     public void Delete(Guid id)
     {
-        throw new NotImplementedException();
+        var transaction = _context.Transactions.FirstOrDefault(t => t.Id == id);
+        if (transaction is null) return;
+
+        _context.Transactions.Remove(transaction);
+        _context.SaveChanges();
     }
 
     void ITransactionService.Update(Guid id, CreateTransactionRequest request)
     {
-        throw new NotImplementedException();
+        var transaction = _context.Transactions.FirstOrDefault(t =>t.Id == id);
+        if (transaction is null) return;
+
+        transaction.Title = request.Title;
+        transaction.Amount = request.Amount;
+        transaction.Date = request.Date;
+        transaction.Type = (TransactionType)request.Type;
+
+        _context.SaveChanges();
     }
 }
 

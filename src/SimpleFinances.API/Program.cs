@@ -1,6 +1,7 @@
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
+using SimpleFinances.Application.Services;
 using SimpleFinances.Application.Validators;
 using SimpleFinances.Infrastructure.Data;
 
@@ -25,6 +26,9 @@ public class Program
         // Banco de dados SQLite (usando EF Core)
         builder.Services.AddDbContext<FinanceDbContext>(options =>
             options.UseSqlite("Data Source=finances.db"));
+        
+        // Registro do serviço com EF Core
+        builder.Services.AddScoped<ITransactionService, TransactionEfService>();
 
         var app = builder.Build();
 
